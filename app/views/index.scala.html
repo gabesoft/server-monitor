@@ -1,8 +1,4 @@
-@*
- * This template takes a single argument, a String containing a
- * message to display.
- *@
-@(message: String)
+@(procs: Seq[models.Proc])
 
 @*
  * Call the `main` template with two arguments. The first
@@ -14,5 +10,11 @@
     <h2>
       Processes Monitored
     </h2>
+
+    <ul>
+      @for(proc <- procs) {
+        <li>@proc.name - @proc.host</li>
+      }
+    </ul>
   </div>
 }
