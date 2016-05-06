@@ -17,3 +17,34 @@ h1 {
 h2 {
   font-size: 1.6em;
 }
+
+.content {
+  height: 100%;
+  width: 90%;
+  margin: 100px auto;
+
+  .title {
+    margin: 10px 0;
+    font-size: 1.4em;
+  }
+
+  ul {
+    display: table;
+    width: 100%;
+    margin: 0 auto;
+
+    li {
+      display: table-row-group;
+    }
+
+    .title,
+    .process-content {
+      display: table-row;
+      width: 100%;
+
+      span {
+        display: table-cell;
+      }
+    }
+  }
+}

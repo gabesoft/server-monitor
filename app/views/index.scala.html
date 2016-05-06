@@ -1,4 +1,4 @@
-@(procs: Seq[models.Proc])
+@(procs: Seq[models.Proc])(implicit req: RequestHeader)
 
 @*
  * Call the `main` template with two arguments. The first
@@ -6,14 +6,30 @@
  * argument is an `Html` object containing the body of the page.
  *@
 @main("Server Monitor") {
-  <div>
-    <h2>
-      Processes Monitored
-    </h2>
-
+  <div class="content">
+    <h3 class="title">Processes</h3>
     <ul>
+      <li class="titles">
+        <div class="process-content">
+          <span class="pid">Pid</span>
+          <span class="name">Name</span>
+          <span class="host">Host</span>
+          <span class="mem">Memory</span>
+          <span class="cpu">Cpu</span>
+          <span class="start-date">Start Date</span>
+        </div>
+      </li>
       @for(proc <- procs) {
-        <li>@proc.name - @proc.host</li>
+        <li class="process @proc.name">
+          <div class="process-content">
+            <span class="pid"></span>
+            <span class="name">@proc.name</span>
+            <span class="host">@proc.host</span>
+            <span class="mem"></span>
+            <span class="cpu"></span>
+            <span class="start-date"></span>
+          </div>
+        </li>
       }
     </ul>
   </div>

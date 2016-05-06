@@ -11,10 +11,9 @@ import scala.util.{ Failure, Success }
 
 /**
   * Actor that reads the status for a process
-  * @param client The client to call with the new status
   * @param proc The process for which to read the status
   */
-class ProcStatusReader(proc: Proc, client: ActorRef) extends Actor with ActorLogging {
+class ProcStatusReader(proc: Proc) extends Actor with ActorLogging {
   def receive = {
     case ReadStatus => readStatus()
     case StopStatusReader => context.stop(self)
@@ -30,9 +29,14 @@ class ProcStatusReader(proc: Proc, client: ActorRef) extends Actor with ActorLog
     ws.url(url).get().onComplete { res =>
       log.info(s"Reading status for ${proc.name} complete")
 
+
       res match {
-        case Success(response) => client ! StatusResponse(response.body)
-        case Failure(ex) => log.error(ex.toString())
+        case Success(response) =>
+          val status = response.body
+          val res = StatusResponse(Proc.withStatus(proc, status))
+          context.system.eventStream.publish(res)
+        case Failure(ex) =>
+          log.error(ex.toString())
       }
 
       ws.close()

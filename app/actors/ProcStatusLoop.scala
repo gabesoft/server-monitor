@@ -3,15 +3,20 @@ package actors
 import scala.concurrent.duration._
 
 import actors.ActorsProtocol._
-import akka.actor.{ActorRef, Actor, ActorLogging, Props}
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import models._
 
+object ProcStatusLoop {
+  def props(procs: Seq[Proc], interval: FiniteDuration): Props =
+    Props(new ProcStatusLoop(procs, interval))
+}
+
 /**
-  * Actor that runs the status reader actors in a loop according to the specified interval
+  * Actor that checks processes status periodically
   * @param procs The list of processes to monitor
   * @param interval The repeat interval
   */
-class TaskLoop(procs: Seq[Proc], interval: FiniteDuration) extends Actor with ActorLogging {
+class ProcStatusLoop(procs: Seq[Proc], interval: FiniteDuration) extends Actor with ActorLogging {
   import context.dispatcher
 
   var readers: Seq[ActorRef] = Nil;
@@ -20,20 +25,22 @@ class TaskLoop(procs: Seq[Proc], interval: FiniteDuration) extends Actor with Ac
     case StartLoop => startLoop
     case StopLoop => stopLoop
     case RunLoop => runLoop
-    case StatusResponse(json) => println(json)
+    case ReadStatus => readStatus
   }
 
   def startLoop(): Unit = {
-    readers = initializeStatusReaders()
-    log.info("Starting task loop")
-    runLoop()
+    if (readers == Nil) {
+      readers = initializeStatusReaders()
+      log.info("Starting task loop")
+      reschedule()
+    }
   }
 
   def initializeStatusReaders(): Seq[ActorRef] = {
     procs.map(
       proc => {
         context.actorOf(
-          Props(classOf[ProcStatusReader], proc, self),
+          Props(classOf[ProcStatusReader], proc),
           proc.name)
       })
   }
@@ -54,6 +61,7 @@ class TaskLoop(procs: Seq[Proc], interval: FiniteDuration) extends Actor with Ac
 
   def stopLoop(): Unit = {
     readers.foreach(reader => reader ! StopStatusReader)
+    readers = Nil
     context.stop(self)
   }
 }
