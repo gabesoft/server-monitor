@@ -1,21 +1,17 @@
 @import 'reset';
+@import 'colors';
 
 html,
 body {
   height: 100%;
+  font-family: 'Roboto Mono';
+  line-height: 1.4em;
+  letter-spacing: 0.03em;
 }
 
 body {
-  background-color: #444;
-  color: #bbb;
-}
-
-h1 {
-  font-size: 1.8em;
-}
-
-h2 {
-  font-size: 1.6em;
+  background-color: $gray100;
+  color: $gray20;
 }
 
 .content {
@@ -32,18 +28,23 @@ h2 {
     display: table;
     width: 100%;
     margin: 0 auto;
+    background-color: $gray90;
 
     li {
       display: table-row-group;
     }
 
-    .title,
+    .titles {
+      color: $gray40;
+    }
+
     .process-content {
       display: table-row;
       width: 100%;
 
       span {
         display: table-cell;
+        padding: 2px 5px;
       }
     }
   }

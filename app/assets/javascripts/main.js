@@ -7,11 +7,20 @@
       el.textContent = value;
     }
 
+    function formatDate(date) {
+      var day = date.getDate();
+      var month = date.getMonth();
+      var year = date.getFullYear();
+      var hours = date.getHours();
+      var minutes = date.getMinutes();
+      return day + '/' + month + '/' + year + ' ' + hours + ':' + minutes;
+    }
+
     function refreshProcess(proc) {
       setValue(proc, 'pid', proc.status.pid);
-      setValue(proc, 'mem', proc.status.mem);
-      setValue(proc, 'cpu', proc.status.cpu);
-      setValue(proc, 'start-date', new Date(proc.status.stime));
+      setValue(proc, 'mem', proc.status.mem + ' %');
+      setValue(proc, 'cpu', proc.status.cpu + ' %');
+      setValue(proc, 'start-date', formatDate(new Date(proc.status.stime)));
     }
 
     ws.onopen = function() {
