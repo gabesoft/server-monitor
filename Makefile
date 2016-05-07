@@ -22,4 +22,10 @@ test: clean-temp
 test-run: clean-temp
 	activator ~test
 
+deploy: clean-temp
+	activator clean compile stage
+
+start: deploy
+	./target/universal/stage/bin/server-monitor
+
 .PHONY: clean-temp

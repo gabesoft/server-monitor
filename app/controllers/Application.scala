@@ -1,7 +1,9 @@
 package controllers
 
 import scala.collection.JavaConverters._
+import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.util.Right
 
 import actors.{ClientConnection, ProcStatusLoop}
 import actors.ActorsProtocol._
@@ -12,6 +14,7 @@ import javax.inject._
 import models._
 import play.api.Play.current
 import play.api.libs.json.JsValue
+import play.api.libs.streams.ActorFlow
 import play.api.mvc._
 
 @Singleton
@@ -26,8 +29,9 @@ class Application @Inject() (implicit system: ActorSystem, materializer: Materia
     Ok(views.html.index(procs))
   }
 
-  def stream = WebSocket.acceptWithActor[JsValue, JsValue] { request =>
-    out => ClientConnection.props(out, statusLoop)
+  def stream = WebSocket.acceptOrResult[JsValue, JsValue] { request =>
+    val actor = ActorFlow.actorRef(out => ClientConnection.props(out, statusLoop))
+    Future.successful(Right(actor))
   }
 
   def readDurationFromConfig(name: String): FiniteDuration = {
