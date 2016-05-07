@@ -34,7 +34,6 @@ class ProcStatusLoop(procs: Seq[Proc], interval: FiniteDuration) extends Actor w
   def startLoop(): Unit = {
     readers = initializeStatusReaders()
     log.info("Starting task loop")
-    reschedule(true)
   }
 
   def stopLoop(): Unit = {
@@ -57,15 +56,14 @@ class ProcStatusLoop(procs: Seq[Proc], interval: FiniteDuration) extends Actor w
 
   def reschedule(force: Boolean = false): Unit = {
     if (count > 0 || force) {
-      log.info("Rescheduling task loop")
-      println(s"Rescheduling task loop $count")
+      log.info(s"Rescheduling task loop $count")
       context.system.scheduler.scheduleOnce(interval, self, RunLoop)
     }
   }
 
   def resumeLoop(): Unit = {
     count = count + 1
-    println(s"Resume loop $count")
+    log.info(s"Resume loop $count")
     readers.foreach(reader => reader ! ResumeStatusReader)
     if (count == 1) {
       reschedule()
@@ -74,7 +72,7 @@ class ProcStatusLoop(procs: Seq[Proc], interval: FiniteDuration) extends Actor w
 
   def pauseLoop(): Unit = {
     count = Math.max(0, count - 1)
-    println(s"Pause loop $count")
+    log.info(s"Pause loop $count")
     if (count == 0) {
       readers.foreach(reader => reader ! PauseStatusReader)
     }
