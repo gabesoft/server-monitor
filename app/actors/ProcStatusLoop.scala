@@ -7,6 +7,8 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import models._
 
 object ProcStatusLoop {
+  case object RunLoop
+
   def props(procs: Seq[Proc], interval: FiniteDuration): Props =
     Props(new ProcStatusLoop(procs, interval))
 }
@@ -18,22 +20,23 @@ object ProcStatusLoop {
   */
 class ProcStatusLoop(procs: Seq[Proc], interval: FiniteDuration) extends Actor with ActorLogging {
   import context.dispatcher
+  import ProcStatusLoop._
 
   var readers: Seq[ActorRef] = Nil;
   var count = 0
 
   def receive = {
-    case StartLoop => startLoop
+    case InitLoop => initLoop
     case StopLoop => stopLoop
-    case ResumeLoop => resumeLoop
+    case StartLoop => startLoop
     case PauseLoop => pauseLoop
     case RunLoop => runLoop
     case ReadStatus => readStatus
   }
 
-  def startLoop(): Unit = {
+  def initLoop(): Unit = {
     readers = initializeStatusReaders()
-    log.info("Starting task loop")
+    log.info("Proc status loop initialized")
   }
 
   def stopLoop(): Unit = {
@@ -61,9 +64,9 @@ class ProcStatusLoop(procs: Seq[Proc], interval: FiniteDuration) extends Actor w
     }
   }
 
-  def resumeLoop(): Unit = {
+  def startLoop(): Unit = {
     count = count + 1
-    log.info(s"Resume loop $count")
+    log.info(s"Start loop $count")
     readers.foreach(reader => reader ! ResumeStatusReader)
     if (count == 1) {
       reschedule()

@@ -23,7 +23,7 @@ class Application @Inject() (implicit system: ActorSystem, materializer: Materia
   val interval = readDurationFromConfig("status.interval")
   val statusLoop = system.actorOf(ProcStatusLoop.props(procs, interval), "statusLoop")
 
-  statusLoop ! StartLoop
+  statusLoop ! InitLoop
 
   def index = Action { implicit request =>
     Ok(views.html.index(procs))

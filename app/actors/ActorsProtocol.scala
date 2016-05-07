@@ -6,10 +6,9 @@ import models._
   * Object that houses all messages passed among actors
   */
 object ActorsProtocol {
-  case object RunLoop
-  case object StartLoop
+  case object InitLoop
   case object StopLoop
-  case object ResumeLoop
+  case object StartLoop
   case object PauseLoop
   case object PauseStatusReader
   case object ResumeStatusReader

@@ -37,7 +37,7 @@ class ClientConnection @Inject() (out: ActorRef, statusReader: ActorRef) extends
 
   override def preStart = {
     context.system.eventStream.subscribe(self, classOf[StatusResponse])
-    statusReader ! ResumeLoop
+    statusReader ! StartLoop
   }
 
   def receive = LoggingReceive {

@@ -8,14 +8,15 @@ lazy val root = (project in file("."))
 
 scalaVersion := "2.11.7"
 
+val akkaVersion = "2.4.4"
+
 libraryDependencies ++= Seq(
   jdbc,
   cache,
   ws,
   "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
-  "com.typesafe.akka" %% "akka-testkit" % "2.4.4" % "test",
-  "com.typesafe.akka" %% "akka-contrib" % "2.4.4",
-  "com.typesafe.akka" %% "akka-cluster" % "2.4.4"
-)
+  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test",
+  "com.typesafe.akka" %% "akka-contrib" % akkaVersion
+  )
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"

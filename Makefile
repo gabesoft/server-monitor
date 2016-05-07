@@ -10,6 +10,9 @@ scalastyle: scalastyle-config.xml clean-temp
 clean-temp:
 	$(RM) $(TEMP)
 
+clean: clean-temp
+	activator clean
+
 build: clean-temp
 	sbt compile -feature
 
