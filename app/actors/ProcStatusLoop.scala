@@ -20,29 +20,30 @@ class ProcStatusLoop(procs: Seq[Proc], interval: FiniteDuration) extends Actor w
   import context.dispatcher
 
   var readers: Seq[ActorRef] = Nil;
+  var count = 0
 
   def receive = {
     case StartLoop => startLoop
     case StopLoop => stopLoop
+    case ResumeLoop => resumeLoop
+    case PauseLoop => pauseLoop
     case RunLoop => runLoop
     case ReadStatus => readStatus
   }
 
   def startLoop(): Unit = {
-    if (readers == Nil) {
-      readers = initializeStatusReaders()
-      log.info("Starting task loop")
-      reschedule()
-    }
+    readers = initializeStatusReaders()
+    log.info("Starting task loop")
+    reschedule(true)
+  }
+
+  def stopLoop(): Unit = {
+    readers.foreach(reader => reader ! StopStatusReader)
+    context.stop(self)
   }
 
   def initializeStatusReaders(): Seq[ActorRef] = {
-    procs.map(
-      proc => {
-        context.actorOf(
-          Props(classOf[ProcStatusReader], proc),
-          proc.name)
-      })
+    procs.map(proc => context.actorOf(ProcStatusReader.props(proc), proc.name))
   }
 
   def readStatus(): Unit = {
@@ -54,14 +55,28 @@ class ProcStatusLoop(procs: Seq[Proc], interval: FiniteDuration) extends Actor w
     reschedule()
   }
 
-  def reschedule(): Unit = {
-    log.info("Rescheduling task loop")
-    context.system.scheduler.scheduleOnce(interval, self, RunLoop)
+  def reschedule(force: Boolean = false): Unit = {
+    if (count > 0 || force) {
+      log.info("Rescheduling task loop")
+      println(s"Rescheduling task loop $count")
+      context.system.scheduler.scheduleOnce(interval, self, RunLoop)
+    }
   }
 
-  def stopLoop(): Unit = {
-    readers.foreach(reader => reader ! StopStatusReader)
-    readers = Nil
-    context.stop(self)
+  def resumeLoop(): Unit = {
+    count = count + 1
+    println(s"Resume loop $count")
+    readers.foreach(reader => reader ! ResumeStatusReader)
+    if (count == 1) {
+      reschedule()
+    }
+  }
+
+  def pauseLoop(): Unit = {
+    count = Math.max(0, count - 1)
+    println(s"Pause loop $count")
+    if (count == 0) {
+      readers.foreach(reader => reader ! PauseStatusReader)
+    }
   }
 }

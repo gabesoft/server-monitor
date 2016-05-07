@@ -2,25 +2,54 @@
   window.onload = function() {
     const ws  = new WebSocket(jsRoutes.controllers.Application.stream().webSocketURL());
 
+    function getProcEl(proc, name) {
+      return document.querySelector('.' + proc.name + ' .' + name);
+    }
+
     function setValue(proc, name, value) {
-      const el = document.querySelector('.' + proc.name + ' .' + name);
-      el.textContent = value;
+      getProcEl(proc, name).textContent = value;
+    }
+
+    function setAttribute(proc, name, attrName, attrValue) {
+      getProcEl(proc, name).setAttribute(attrName, attrValue);
+    }
+
+    function toggleClass(proc, name, cls, add)  {
+      const el = getProcEl(proc, name);
+      const fn = add ? 'add' : 'remove';
+      el.classList[fn](cls);
+    }
+
+    function padWithZeros(num) {
+      return num < 10 ? '0' + num : num;
     }
 
     function formatDate(date) {
-      var day = date.getDate();
-      var month = date.getMonth();
+      var day = padWithZeros(date.getDate());
+      var month = padWithZeros(date.getMonth());
       var year = date.getFullYear();
-      var hours = date.getHours();
-      var minutes = date.getMinutes();
+      var hours = padWithZeros(date.getHours());
+      var minutes = padWithZeros(date.getMinutes());
       return day + '/' + month + '/' + year + ' ' + hours + ':' + minutes;
     }
 
     function refreshProcess(proc) {
-      setValue(proc, 'pid', proc.status.pid);
-      setValue(proc, 'mem', proc.status.mem + ' %');
-      setValue(proc, 'cpu', proc.status.cpu + ' %');
-      setValue(proc, 'start-date', formatDate(new Date(proc.status.stime)));
+      console.log(proc.status);
+      if (proc.status.error) {
+        setValue(proc, 'status', 'down');
+        setAttribute(proc, 'status', 'title', proc.status.error);
+        toggleClass(proc, 'status', 'up', false);
+        toggleClass(proc, 'status', 'down', true);
+      } else {
+        setValue(proc, 'pid', proc.status.pid);
+        setValue(proc, 'mem', proc.status.mem + ' %');
+        setValue(proc, 'cpu', proc.status.cpu + ' %');
+        setValue(proc, 'start-date', formatDate(new Date(proc.status.stime)));
+        setValue(proc, 'status', 'up');
+        toggleClass(proc, 'status', 'up', true);
+        toggleClass(proc, 'status', 'down', false);
+        setAttribute(proc, 'status', 'title');
+      }
     }
 
     ws.onopen = function() {

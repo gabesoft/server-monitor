@@ -1,45 +1,68 @@
 package actors
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success}
 
 import actors.ActorsProtocol._
-import akka.actor.{Actor, ActorRef, ActorLogging, ActorSystem}
+import akka.actor.{Props, Actor, ActorLogging, ActorRef, ActorSystem}
 import akka.stream.ActorMaterializer
 import models._
 import play.api.libs.ws.ahc.AhcWSClient
-import scala.util.{ Failure, Success }
+
+object ProcStatusReader {
+  def props(proc: Proc): Props = Props(new ProcStatusReader(proc))
+}
 
 /**
   * Actor that reads the status for a process
   * @param proc The process for which to read the status
   */
 class ProcStatusReader(proc: Proc) extends Actor with ActorLogging {
+  var paused = false
+  var running = false
+  var stopped = false
+
   def receive = {
-    case ReadStatus => readStatus()
-    case StopStatusReader => context.stop(self)
+    case ReadStatus =>
+      if(!paused) readStatus()
+    case PauseStatusReader =>
+      paused = true
+    case ResumeStatusReader =>
+      paused = false
+    case StopStatusReader =>
+      stopped = true
+      if (!running) context.stop(self)
+  }
+
+  def publish(data: String): Unit = {
+    val status = StatusResponse(Proc.withStatus(proc, data))
+    context.system.eventStream.publish(status)
   }
 
   def readStatus(): Unit = {
     implicit val materializer = ActorMaterializer()
     implicit val system = ActorSystem()
 
+    running = true
+
     val ws = AhcWSClient()
     val url = "http://" + proc.host + proc.statusPath
 
     ws.url(url).get().onComplete { res =>
-      log.info(s"Reading status for ${proc.name} complete")
-
-
       res match {
         case Success(response) =>
-          val status = response.body
-          val res = StatusResponse(Proc.withStatus(proc, status))
-          context.system.eventStream.publish(res)
+          publish(response.body)
         case Failure(ex) =>
-          log.error(ex.toString())
+          val data = s"""{"error":"${ex.toString()}"}"""
+          publish(data)
       }
 
       ws.close()
+      running = false
+
+      if (stopped) {
+        context.stop(self)
+      }
     }
   }
 }

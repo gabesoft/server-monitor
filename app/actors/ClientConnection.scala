@@ -29,11 +29,15 @@ object ClientConnection {
   }
 }
 
+/**
+  * Actor that facilitates passing and receiving messages via web sockets
+  */
 class ClientConnection @Inject() (out: ActorRef, statusReader: ActorRef) extends Actor with ActorLogging {
   import ClientConnection._
 
   override def preStart = {
     context.system.eventStream.subscribe(self, classOf[StatusResponse])
+    statusReader ! ResumeLoop
   }
 
   def receive = LoggingReceive {
@@ -48,5 +52,6 @@ class ClientConnection @Inject() (out: ActorRef, statusReader: ActorRef) extends
 
   override def postStop = {
     context.system.eventStream.unsubscribe(self, classOf[ProcStatusReader])
+    statusReader ! PauseLoop
   }
 }

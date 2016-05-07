@@ -1,10 +1,5 @@
 @(procs: Seq[models.Proc])(implicit req: RequestHeader)
 
-@*
- * Call the `main` template with two arguments. The first
- * argument is a `String` with the title of the page, the second
- * argument is an `Html` object containing the body of the page.
- *@
 @main("Server Monitor") {
   <div class="content">
     <h3 class="title">Processes</h3>
@@ -17,6 +12,7 @@
           <span class="mem">Memory</span>
           <span class="cpu">Cpu</span>
           <span class="start-date">Start Date</span>
+          <span class="status">Status</span>
         </div>
       </li>
       @for(proc <- procs) {
@@ -28,6 +24,7 @@
             <span class="mem"></span>
             <span class="cpu"></span>
             <span class="start-date"></span>
+            <span class="status"></span>
           </div>
         </li>
       }
