@@ -26,6 +26,6 @@ deploy: clean-temp
 	activator clean compile stage
 
 start: deploy
-	./target/universal/stage/bin/server-monitor
+	./target/universal/stage/bin/server-monitor -J-Xms128M -J-Xmx512m -J-server
 
 .PHONY: clean-temp
