@@ -1,6 +1,7 @@
 (function() {
   window.onload = function() {
     const ws  = new WebSocket(jsRoutes.controllers.Application.stream().webSocketURL());
+    const connectionTimeout = 30 * 60 * 1000;
 
     function getProcEl(proc, name) {
       return document.querySelector('.' + proc.name + ' .' + name);
@@ -55,6 +56,9 @@
     ws.onopen = function() {
       console.log('socket open');
       ws.send(JSON.stringify({ type: 'readStatus' }));
+      setTimeout(function() {
+        ws.close();
+      }, connectionTimeout);
     };
 
     ws.onclose = function() {
