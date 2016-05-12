@@ -13,7 +13,7 @@ body {
   color: $gray20;
 }
 
-.content {
+.main-content {
   height: 100%;
   width: 90%;
   margin: 100px auto;
@@ -22,45 +22,48 @@ body {
     margin: 10px 0;
     font-size: 1.4em;
   }
+}
 
-  .process {
-    .status {
-      &.up {
-        color: $green_light;
-      }
+.titles,
+.process {
+  .content {
+    display: table-row;
+    width: 100%;
 
-      &.down {
-        color: $red_light;
-      }
+    span {
+      display: table-cell;
+      padding: 2px 5px;
+    }
+  }
+}
+
+.titles {
+  color: $gray40;
+}
+
+.process {
+  .status {
+    &.up {
+      color: $green_light;
     }
 
-    .name {
-      color: $brown_light;
+    &.down {
+      color: $red_light;
     }
   }
 
-  ul {
-    display: table;
-    width: 100%;
-    margin: 0 auto;
-    background-color: $gray90;
+  .name {
+    color: $brown_light;
+  }
+}
 
-    li {
-      display: table-row-group;
-    }
+.process-list {
+  display: table;
+  width: 100%;
+  margin: 0 auto;
+  background-color: $gray90;
 
-    .titles {
-      color: $gray40;
-    }
-
-    .process-content {
-      display: table-row;
-      width: 100%;
-
-      span {
-        display: table-cell;
-        padding: 2px 5px;
-      }
-    }
+  li {
+    display: table-row-group;
   }
 }

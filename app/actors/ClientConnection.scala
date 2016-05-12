@@ -37,6 +37,7 @@ class ClientConnection @Inject() (out: ActorRef, statusReader: ActorRef) extends
 
   override def preStart = {
     context.system.eventStream.subscribe(self, classOf[StatusResponse])
+    log.info("Start loop")
     statusReader ! StartLoop
   }
 
@@ -46,12 +47,14 @@ class ClientConnection @Inject() (out: ActorRef, statusReader: ActorRef) extends
     case js: JsValue =>
       ((js \ "type").as[String]) match {
         case "readStatus" =>
+          log.info("Read status")
           statusReader ! ReadStatus
       }
   }
 
   override def postStop = {
     context.system.eventStream.unsubscribe(self, classOf[ProcStatusReader])
+    log.info("Pause loop")
     statusReader ! PauseLoop
   }
 }

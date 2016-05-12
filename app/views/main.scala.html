@@ -18,9 +18,12 @@
     @helper.javascriptRouter("jsRoutes")(
       routes.javascript.Application.stream
     )
-    <script src="@routes.Assets.versioned("javascripts/main.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("javascripts/main-elm.js")" type="text/javascript"></script>
   </head>
   <body>
     @content
   </body>
+  <script>
+   Elm.Main.embed(document.getElementById('app-content'));
+  </script>
 </html>

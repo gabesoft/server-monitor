@@ -31,4 +31,10 @@ deploy: clean-temp
 start: deploy
 	./target/universal/stage/bin/server-monitor -J-Xms128M -J-Xmx512m -J-server
 
+build-elm:
+	cd app/assets/elm && elm make src/Main.elm --output ../../../public/javascripts/main-elm.js
+
+install-elm:
+	cd app/assets/elm && elm package install
+
 .PHONY: clean-temp

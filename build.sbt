@@ -6,6 +6,11 @@ lazy val root = (project in file("."))
   .enablePlugins(PlayScala)
   .enablePlugins(SbtWeb)
 
+excludeFilter in (Assets, JshintKeys.jshint) := {
+  val elm = (baseDirectory.value / "app/assets/elm").getCanonicalPath
+  new SimpleFileFilter(_.getCanonicalPath startsWith elm)
+}
+
 scalaVersion := "2.11.7"
 
 val akkaVersion = "2.4.4"

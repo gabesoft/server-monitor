@@ -22,6 +22,9 @@ class ProcStatusReader(proc: Proc) extends Actor with ActorLogging {
   var running = false
   var stopped = false
 
+  implicit val materializer = ActorMaterializer()
+  implicit val system = ActorSystem("main-actor-system")
+
   def receive = {
     case ReadStatus =>
       if(!paused) readStatus()
@@ -40,8 +43,6 @@ class ProcStatusReader(proc: Proc) extends Actor with ActorLogging {
   }
 
   def readStatus(): Unit = {
-    implicit val materializer = ActorMaterializer()
-    implicit val system = ActorSystem()
 
     running = true
 

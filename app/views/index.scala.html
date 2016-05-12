@@ -1,33 +1,8 @@
 @(procs: Seq[models.Proc])(implicit req: RequestHeader)
 
 @main("Server Monitor") {
-  <div class="content">
-    <h3 class="title">Processes</h3>
-    <ul>
-      <li class="titles">
-        <div class="process-content">
-          <span class="pid">Pid</span>
-          <span class="name">Name</span>
-          <span class="host">Host</span>
-          <span class="mem">Memory</span>
-          <span class="cpu">Cpu</span>
-          <span class="start-date">Start Date</span>
-          <span class="status">Status</span>
-        </div>
-      </li>
-      @for(proc <- procs) {
-        <li class="process @proc.name">
-          <div class="process-content">
-            <span class="pid"></span>
-            <span class="name">@proc.name</span>
-            <span class="host">@proc.host</span>
-            <span class="mem"></span>
-            <span class="cpu"></span>
-            <span class="start-date"></span>
-            <span class="status"></span>
-          </div>
-        </li>
-      }
-    </ul>
-  </div>
+  <div id="app-content"></div>
+  <script>
+   window.socketUrl = jsRoutes.controllers.Application.stream().webSocketURL();
+  </script>
 }
