@@ -1,0 +1,271 @@
+var _gabesoft$server_monitor$Main$replace = F2(
+	function (list, proc) {
+		var has = function (x) {
+			return _elm_lang$core$Native_Utils.cmp(x, 0) > 0;
+		}(
+			_elm_lang$core$List$length(
+				A2(
+					_elm_lang$core$List$filter,
+					function (p) {
+						return _elm_lang$core$Native_Utils.eq(p.name, proc.name);
+					},
+					list)));
+		var _p0 = has;
+		if (_p0 === true) {
+			return A2(
+				_elm_lang$core$List$map,
+				function (p) {
+					return _elm_lang$core$Native_Utils.eq(p.name, proc.name) ? proc : p;
+				},
+				list);
+		} else {
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				list,
+				_elm_lang$core$Native_List.fromArray(
+					[proc]));
+		}
+	});
+var _gabesoft$server_monitor$Main$toSpan = function (item) {
+	var _p1 = item;
+	if (_p1.ctor === 'Span') {
+		return A2(
+			_elm_lang$html$Html$span,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$class(_p1._0)
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html$text(_p1._1)
+				]));
+	} else {
+		return A2(
+			_elm_lang$html$Html$span,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$class(_p1._0),
+					_elm_lang$html$Html_Attributes$title(_p1._2)
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html$text(_p1._1)
+				]));
+	}
+};
+var _gabesoft$server_monitor$Main$toRecord = function (process) {
+	return {
+		pid: A2(_elm_lang$core$Maybe$withDefault, '', process.pid),
+		name: process.name,
+		host: process.host,
+		start: function () {
+			var _p2 = process.started;
+			if (_p2.ctor === 'Just') {
+				return A2(_gabesoft$server_monitor$DateFormat$format, '%d/%m/%Y', _p2._0);
+			} else {
+				return '';
+			}
+		}(),
+		memory: _elm_lang$core$Basics$toString(
+			A2(_elm_lang$core$Maybe$withDefault, 0.0, process.memory)),
+		cpu: _elm_lang$core$Basics$toString(
+			A2(_elm_lang$core$Maybe$withDefault, 0.0, process.cpu)),
+		status: function () {
+			var _p3 = process.status;
+			if (_p3.ctor === 'Running') {
+				return {ctor: '_Tuple2', _0: 'up', _1: ''};
+			} else {
+				return {ctor: '_Tuple2', _0: 'down', _1: _p3._0};
+			}
+		}(),
+		$class: A2(_elm_lang$core$Basics_ops['++'], 'process ', process.name)
+	};
+};
+var _gabesoft$server_monitor$Main$sendReadStatus = function (url) {
+	return A2(_elm_lang$websocket$WebSocket$send, url, '{ \"type\": \"readStatus\" }');
+};
+var _gabesoft$server_monitor$Main$update = F2(
+	function (msg, model) {
+		var _p4 = msg;
+		if (_p4.ctor === 'NewMessage') {
+			var _p5 = _gabesoft$server_monitor$Json$decode(_p4._0);
+			if (_p5.ctor === 'Just') {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							processes: A2(_gabesoft$server_monitor$Main$replace, model.processes, _p5._0)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			} else {
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			}
+		} else {
+			return {
+				ctor: '_Tuple2',
+				_0: model,
+				_1: _gabesoft$server_monitor$Main$sendReadStatus(model.url)
+			};
+		}
+	});
+var _gabesoft$server_monitor$Main$init = function (flags) {
+	var url = flags.socketUrl;
+	return {
+		ctor: '_Tuple2',
+		_0: {
+			processes: _elm_lang$core$Native_List.fromArray(
+				[]),
+			url: url
+		},
+		_1: _gabesoft$server_monitor$Main$sendReadStatus(url)
+	};
+};
+var _gabesoft$server_monitor$Main$Model = F2(
+	function (a, b) {
+		return {processes: a, url: b};
+	});
+var _gabesoft$server_monitor$Main$Flags = function (a) {
+	return {socketUrl: a};
+};
+var _gabesoft$server_monitor$Main$ReadStatus = function (a) {
+	return {ctor: 'ReadStatus', _0: a};
+};
+var _gabesoft$server_monitor$Main$NewMessage = function (a) {
+	return {ctor: 'NewMessage', _0: a};
+};
+var _gabesoft$server_monitor$Main$subscriptions = function (model) {
+	return _elm_lang$core$Platform_Sub$batch(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(_elm_lang$websocket$WebSocket$listen, model.url, _gabesoft$server_monitor$Main$NewMessage),
+				_gabesoft$server_monitor$Interop$readStatus(_gabesoft$server_monitor$Main$ReadStatus)
+			]));
+};
+var _gabesoft$server_monitor$Main$SpanEx = F3(
+	function (a, b, c) {
+		return {ctor: 'SpanEx', _0: a, _1: b, _2: c};
+	});
+var _gabesoft$server_monitor$Main$Span = F2(
+	function (a, b) {
+		return {ctor: 'Span', _0: a, _1: b};
+	});
+var _gabesoft$server_monitor$Main$display = function (record) {
+	return A2(
+		_elm_lang$html$Html$li,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$class(record.$class)
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('content')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_gabesoft$server_monitor$Main$toSpan(
+						A2(_gabesoft$server_monitor$Main$Span, 'pid', record.pid)),
+						_gabesoft$server_monitor$Main$toSpan(
+						A2(_gabesoft$server_monitor$Main$Span, 'name', record.name)),
+						_gabesoft$server_monitor$Main$toSpan(
+						A2(_gabesoft$server_monitor$Main$Span, 'host', record.host)),
+						_gabesoft$server_monitor$Main$toSpan(
+						A2(_gabesoft$server_monitor$Main$Span, 'start', record.start)),
+						_gabesoft$server_monitor$Main$toSpan(
+						A2(_gabesoft$server_monitor$Main$Span, 'mem', record.memory)),
+						_gabesoft$server_monitor$Main$toSpan(
+						A2(_gabesoft$server_monitor$Main$Span, 'cpu', record.cpu)),
+						_gabesoft$server_monitor$Main$toSpan(
+						A3(
+							_gabesoft$server_monitor$Main$SpanEx,
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								'status ',
+								_elm_lang$core$Basics$fst(record.status)),
+							_elm_lang$core$Basics$fst(record.status),
+							_elm_lang$core$Basics$snd(record.status)))
+					]))
+			]));
+};
+var _gabesoft$server_monitor$Main$view = function (model) {
+	var titles = {
+		pid: 'Pid',
+		name: 'Name',
+		host: 'Host',
+		start: 'Start Date',
+		memory: 'Memory',
+		cpu: 'Cpu',
+		status: {ctor: '_Tuple2', _0: 'Status', _1: ''},
+		$class: 'titles'
+	};
+	var procs = A2(_elm_lang$core$List$map, _gabesoft$server_monitor$Main$toRecord, model.processes);
+	var items = A2(
+		_elm_lang$core$List$map,
+		_gabesoft$server_monitor$Main$display,
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Native_List.fromArray(
+				[titles]),
+			procs));
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('main-content')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$h3,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('title')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Processes')
+							])),
+						A2(
+						_elm_lang$html$Html$ul,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('process-list')
+							]),
+						items),
+						A2(
+						_elm_lang$html$Html$button,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('refresh'),
+								_elm_lang$html$Html_Events$onClick(
+								_gabesoft$server_monitor$Main$ReadStatus(model.url))
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Refresh')
+							]))
+					]))
+			]));
+};
+var _gabesoft$server_monitor$Main$main = {
+	main: _elm_lang$html$Html_App$programWithFlags(
+		{init: _gabesoft$server_monitor$Main$init, view: _gabesoft$server_monitor$Main$view, update: _gabesoft$server_monitor$Main$update, subscriptions: _gabesoft$server_monitor$Main$subscriptions}),
+	flags: A2(
+		_elm_lang$core$Json_Decode$andThen,
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'socketUrl', _elm_lang$core$Json_Decode$string),
+		function (socketUrl) {
+			return _elm_lang$core$Json_Decode$succeed(
+				{socketUrl: socketUrl});
+		})
+};

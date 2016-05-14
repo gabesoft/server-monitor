@@ -1,4 +1,4 @@
-logs
+lugs
 target
 /.idea
 /.idea_modules
@@ -6,12 +6,13 @@ target
 /.project
 /.settings
 /RUNNING_PID
+/logs
 .#*
 .ensime
 .ensime_cache
 scalastyle-config.xml
 .DS_Store
-app/assets/elm/elm-stuff
-app/assets/elm/elm.js
-app/assets/elm/index.html
+client/<Plug>lm-stuff
+client/<Plug>lm.js
+client/<Plug>ndex.html
 public/javascripts/main-elm.js

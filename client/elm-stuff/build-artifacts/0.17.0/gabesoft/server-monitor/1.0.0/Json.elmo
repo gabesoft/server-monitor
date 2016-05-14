@@ -1,0 +1,79 @@
+var _gabesoft$server_monitor$Json$decodeDown = function (json) {
+	var decoder = A4(
+		_elm_lang$core$Json_Decode$object3,
+		F3(
+			function (v0, v1, v2) {
+				return {ctor: '_Tuple3', _0: v0, _1: v1, _2: v2};
+			}),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'name', _elm_lang$core$Json_Decode$string),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'host', _elm_lang$core$Json_Decode$string),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'reason', _elm_lang$core$Json_Decode$string));
+	var _p0 = A2(_elm_lang$core$Json_Decode$decodeString, decoder, json);
+	if (_p0.ctor === 'Ok') {
+		var proc = A8(
+			_gabesoft$server_monitor$Types$Process,
+			_p0._0._0,
+			_p0._0._1,
+			_gabesoft$server_monitor$Types$Down(_p0._0._2),
+			_elm_lang$core$Maybe$Nothing,
+			_elm_lang$core$Maybe$Nothing,
+			_elm_lang$core$Maybe$Nothing,
+			_elm_lang$core$Maybe$Nothing,
+			_elm_lang$core$Maybe$Nothing);
+		return _elm_lang$core$Maybe$Just(proc);
+	} else {
+		return _elm_lang$core$Maybe$Nothing;
+	}
+};
+var _gabesoft$server_monitor$Json$decodeRunning = function (json) {
+	var decoder = A8(
+		_elm_lang$core$Json_Decode$object7,
+		F7(
+			function (v0, v1, v2, v3, v4, v5, v6) {
+				return {ctor: '_Tuple7', _0: v0, _1: v1, _2: v2, _3: v3, _4: v4, _5: v5, _6: v6};
+			}),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'name', _elm_lang$core$Json_Decode$string),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'host', _elm_lang$core$Json_Decode$string),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'cpu', _elm_lang$core$Json_Decode$float),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'memory', _elm_lang$core$Json_Decode$float),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'pid', _elm_lang$core$Json_Decode$string),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'startDate', _elm_lang$core$Json_Decode$float),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'currentDate', _elm_lang$core$Json_Decode$float));
+	var _p1 = A2(_elm_lang$core$Json_Decode$decodeString, decoder, json);
+	if (_p1.ctor === 'Ok') {
+		var proc = {
+			name: _p1._0._0,
+			host: _p1._0._1,
+			status: _gabesoft$server_monitor$Types$Running,
+			cpu: _elm_lang$core$Maybe$Just(_p1._0._2),
+			memory: _elm_lang$core$Maybe$Just(_p1._0._3),
+			pid: _elm_lang$core$Maybe$Just(_p1._0._4),
+			started: _elm_lang$core$Maybe$Just(
+				_elm_lang$core$Date$fromTime(_p1._0._5)),
+			current: _elm_lang$core$Maybe$Just(
+				_elm_lang$core$Date$fromTime(_p1._0._6))
+		};
+		return _elm_lang$core$Maybe$Just(proc);
+	} else {
+		return _elm_lang$core$Maybe$Nothing;
+	}
+};
+var _gabesoft$server_monitor$Json$decode = function (json) {
+	var _p2 = A2(
+		_elm_lang$core$Json_Decode$decodeString,
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'status', _elm_lang$core$Json_Decode$string),
+		json);
+	if (_p2.ctor === 'Ok') {
+		var _p3 = _p2._0;
+		switch (_p3) {
+			case 'running':
+				return _gabesoft$server_monitor$Json$decodeRunning(json);
+			case 'down':
+				return _gabesoft$server_monitor$Json$decodeDown(json);
+			default:
+				return _elm_lang$core$Maybe$Nothing;
+		}
+	} else {
+		return _elm_lang$core$Maybe$Nothing;
+	}
+};

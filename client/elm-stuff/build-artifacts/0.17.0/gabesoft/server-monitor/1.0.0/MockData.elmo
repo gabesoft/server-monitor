@@ -1,0 +1,20 @@
+var _gabesoft$server_monitor$MockData$make = F7(
+	function (pid, name, host, start, memory, cpu, status) {
+		return {
+			pid: pid,
+			name: name,
+			start: _elm_lang$core$Date$fromTime(start),
+			host: host,
+			memory: memory,
+			cpu: cpu,
+			status: status
+		};
+	});
+var _gabesoft$server_monitor$MockData$data = _elm_lang$core$Native_List.fromArray(
+	[
+		A7(_gabesoft$server_monitor$MockData$make, '5919', 'dask', 'localhost:8009', 1462491151045, 0.2, 0.4, _gabesoft$server_monitor$Types$Up),
+		A7(_gabesoft$server_monitor$MockData$make, '5493', 'ayne', 'localhost:8029', 1461891111041, 0.2, 0.4, _gabesoft$server_monitor$Types$Up),
+		A7(_gabesoft$server_monitor$MockData$make, '8766', 'seryth', 'localhost:4009', 1462894151028, 0.8, 0.4, _gabesoft$server_monitor$Types$Up),
+		A7(_gabesoft$server_monitor$MockData$make, '5919', 'vplug', 'localhost:8012', 1460891151044, 0.2, 0.1, _gabesoft$server_monitor$Types$Down),
+		A7(_gabesoft$server_monitor$MockData$make, '5919', 'xandar', 'localhost:8041', 1262891351048, 1.3, 4.4, _gabesoft$server_monitor$Types$Up)
+	]);

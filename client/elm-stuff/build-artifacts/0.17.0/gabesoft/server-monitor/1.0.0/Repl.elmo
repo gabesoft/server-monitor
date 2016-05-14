@@ -1,0 +1,19 @@
+var _gabesoft$server_monitor$Repl$t_s_o_l = {ctor: '_Tuple0'};
+var _gabesoft$server_monitor$Repl$p = _elm_lang$core$Json_Encode$object(
+	_elm_lang$core$Native_List.fromArray(
+		[
+			{
+			ctor: '_Tuple2',
+			_0: 'name',
+			_1: _elm_lang$core$Json_Encode$string('Tom')
+		}
+		]));
+var _gabesoft$server_monitor$Repl$d_e_l_t_r_o_n_3_0_3_0 = _elm_lang$core$Date$now;
+var _gabesoft$server_monitor$Repl$Model = F2(
+	function (a, b) {
+		return {topic: a, url: b};
+	});
+var _gabesoft$server_monitor$Repl$a = A2(_gabesoft$server_monitor$Repl$Model, 'a', 'b');
+var _gabesoft$server_monitor$Repl$b = _elm_lang$core$Native_Utils.update(
+	_gabesoft$server_monitor$Repl$a,
+	{url: 'c'});
