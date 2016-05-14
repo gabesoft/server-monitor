@@ -38,7 +38,7 @@ start: deploy
 	./target/universal/stage/bin/server-monitor -J-Xms128M -J-Xmx512m -J-server
 
 build-elm:
-	@cd $(CLIENT) && elm make src/Main.elm --output ../public/javascripts/main-elm.js
+	@cd $(CLIENT) && elm make src/Main.elm --output $(DIR)/public/javascripts/main-elm.js
 
 install-elm:
 	@cd $(CLIENT) && elm package install
