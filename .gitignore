@@ -10,7 +10,6 @@ target
 .#*
 .ensime
 .ensime_cache
-scalastyle-config.xml
 .DS_Store
 client/elm-stuff
 client/elm.js

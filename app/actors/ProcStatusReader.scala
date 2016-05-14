@@ -28,7 +28,7 @@ class ProcStatusReader(procInfo: ProcessInfo) extends Actor with ActorLogging {
 
   val ws = AhcWSClient()
 
-  def receive = {
+  def receive: PartialFunction[Any, Unit] = {
     case ReadStatus =>
       if(!paused) readStatus()
     case PauseStatusReader =>
@@ -40,11 +40,7 @@ class ProcStatusReader(procInfo: ProcessInfo) extends Actor with ActorLogging {
       if (!running) context.stop(self)
   }
 
-  def publish(proc: ProcessInfo): Unit = {
-    context.system.eventStream.publish(StatusResponse(proc))
-  }
-
-  override def postStop = {
+  override def postStop: Unit = {
     try {
       ws.close()
     } catch {
@@ -52,7 +48,11 @@ class ProcStatusReader(procInfo: ProcessInfo) extends Actor with ActorLogging {
     }
   }
 
-  def readStatus(): Unit = {
+  private def publish(proc: ProcessInfo): Unit = {
+    context.system.eventStream.publish(StatusResponse(proc))
+  }
+
+  private def readStatus(): Unit = {
 
     running = true
 

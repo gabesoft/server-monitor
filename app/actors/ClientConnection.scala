@@ -32,13 +32,13 @@ object ClientConnection {
 class ClientConnection @Inject() (out: ActorRef, statusReader: ActorRef) extends Actor with ActorLogging {
   import ClientConnection._
 
-  override def preStart = {
+  override def preStart: Unit = {
     context.system.eventStream.subscribe(self, classOf[StatusResponse])
     log.info("Start loop")
     statusReader ! StartLoop
   }
 
-  def receive = LoggingReceive {
+  def receive: PartialFunction[Any, Unit] = LoggingReceive {
     case StatusResponse(proc: ProcessInfo) =>
       out ! Json.toJson(ProcStatusMessage(proc))
     case js: JsValue =>
@@ -49,7 +49,7 @@ class ClientConnection @Inject() (out: ActorRef, statusReader: ActorRef) extends
       }
   }
 
-  override def postStop = {
+  override def postStop: Unit = {
     context.system.eventStream.unsubscribe(self, classOf[ProcStatusReader])
     log.info("Pause loop")
     statusReader ! PauseLoop

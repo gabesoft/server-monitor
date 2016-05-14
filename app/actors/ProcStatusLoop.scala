@@ -26,7 +26,7 @@ class ProcStatusLoop(procs: Seq[ProcessInfo], interval: FiniteDuration) extends 
   var count = 0
   var scheduled = false
 
-  def receive = {
+  def receive: PartialFunction[Any, Unit] = {
     case InitLoop => initLoop
     case StopLoop => stopLoop
     case StartLoop => startLoop
@@ -35,31 +35,31 @@ class ProcStatusLoop(procs: Seq[ProcessInfo], interval: FiniteDuration) extends 
     case ReadStatus => readStatus
   }
 
-  def initLoop(): Unit = {
+  private def initLoop(): Unit = {
     readers = initializeStatusReaders()
     log.info("Proc status loop initialized")
   }
 
-  def stopLoop(): Unit = {
+  private def stopLoop(): Unit = {
     readers.foreach(reader => reader ! StopStatusReader)
     context.stop(self)
   }
 
-  def initializeStatusReaders(): Seq[ActorRef] = {
+  private def initializeStatusReaders(): Seq[ActorRef] = {
     procs.map(proc => context.actorOf(ProcStatusReader.props(proc), proc.name))
   }
 
-  def readStatus(): Unit = {
+  private def readStatus(): Unit = {
     readers.foreach(reader => reader ! ReadStatus)
   }
 
-  def runLoop(): Unit = {
+  private def runLoop(): Unit = {
     scheduled = false
     readStatus()
     reschedule()
   }
 
-  def reschedule(): Unit = {
+  private def reschedule(): Unit = {
     if (!scheduled && count > 0) {
       log.debug(s"Rescheduling task loop $count")
       context.system.scheduler.scheduleOnce(interval, self, RunLoop)
@@ -67,14 +67,14 @@ class ProcStatusLoop(procs: Seq[ProcessInfo], interval: FiniteDuration) extends 
     }
   }
 
-  def startLoop(): Unit = {
+  private def startLoop(): Unit = {
     count = count + 1
     log.debug(s"Start loop $count")
     readers.foreach(reader => reader ! ResumeStatusReader)
     reschedule()
   }
 
-  def pauseLoop(): Unit = {
+  private def pauseLoop(): Unit = {
     count = Math.max(0, count - 1)
     log.debug(s"Pause loop $count")
     if (count == 0) {

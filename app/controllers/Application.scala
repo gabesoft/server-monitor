@@ -25,21 +25,21 @@ class Application @Inject() (implicit system: ActorSystem, materializer: Materia
 
   statusLoop ! InitLoop
 
-  def index = Action { implicit request =>
+  def index : Action[AnyContent] = Action { implicit request =>
     Ok(views.html.index(procs))
   }
 
-  def stream = WebSocket.acceptOrResult[JsValue, JsValue] { request =>
+  def stream : WebSocket = WebSocket.acceptOrResult[JsValue, JsValue] { request =>
     val actor = ActorFlow.actorRef(out => ClientConnection.props(out, statusLoop))
     Future.successful(Right(actor))
   }
 
-  def readDurationFromConfig(name: String): FiniteDuration = {
+  private def readDurationFromConfig(name: String): FiniteDuration = {
     val d = ConfigFactory.load().getDuration(name)
     d.toNanos nanoseconds
   }
 
-  def readProcsFromConfig(): Seq[ProcessInfo] = {
+  private def readProcsFromConfig(): Seq[ProcessInfo] = {
     def makeProc(config: Config): ProcessInfo = {
       ProcessInfo.make(
         config.getString("name"),

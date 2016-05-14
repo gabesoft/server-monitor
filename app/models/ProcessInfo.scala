@@ -76,5 +76,5 @@ case class ProcessInfo (
   pid: Option[String],
   startDate: Option[Long]
 ) {
-  def pingUrl = s"http://${this.host}${this.pingPath}"
+  def pingUrl: String = s"http://${this.host}${this.pingPath}"
 }
