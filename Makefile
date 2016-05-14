@@ -29,7 +29,7 @@ test: clean-temp
 test-run: clean-temp
 	activator ~test
 
-deploy: clean-temp
+deploy: clean-temp build-elm
 	activator clean compile stage
 
 start: deploy
