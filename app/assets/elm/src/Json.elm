@@ -1,55 +1,78 @@
 module Json exposing (decode)
 
+import Maybe
 import Date
 import Json.Decode exposing (..)
 import Types exposing (..)
 
 
-decode : String -> ProcessResult
+decode : String -> Maybe Process
 decode json =
+    case decodeString ("status" := string) json of
+        Ok status ->
+            case status of
+                "running" ->
+                    decodeRunning json
+
+                "down" ->
+                    decodeDown json
+
+                _ ->
+                    Nothing
+
+        Err error ->
+            Nothing
+
+
+decodeRunning : String -> Maybe Process
+decodeRunning json =
     let
         decoder =
-            object2 (,) ("name" := string) ("status" := string)
+            object7 (,,,,,,)
+                ("name" := string)
+                ("host" := string)
+                ("cpu" := float)
+                ("memory" := float)
+                ("pid" := string)
+                ("startDate" := float)
+                ("currentDate" := float)
     in
         case decodeString decoder json of
-            Ok ( name, status ) ->
-                { name = name, process = decodeStatus status }
+            Ok ( name, host, cpu, memory, pid, startDate, currentDate ) ->
+                let
+                    proc =
+                        { name = name
+                        , host = host
+                        , status = Running
+                        , cpu = Just cpu
+                        , memory = Just memory
+                        , pid = Just pid
+                        , started = Just (Date.fromTime startDate)
+                        , current = Just (Date.fromTime currentDate)
+                        }
+                in
+                    Just proc
 
             Err error ->
-                { name = "invalid", process = Error error }
+                Nothing
 
 
-decodeStatus : String -> ProcessResultData
-decodeStatus json =
-    case decodeString ("error" := string) json of
-        Ok msg ->
-            Error msg
-
-        Err _ ->
-            decodeValidStatus json
-
-
-decodeValidStatus : String -> ProcessResultData
-decodeValidStatus json =
+decodeDown : String -> Maybe Process
+decodeDown json =
     let
         decoder =
-            object4 (,,,)
-                ("pid" := string)
-                ("cpu" := float)
-                ("mem" := float)
-                ("stime" := float)
+            object3 (,,)
+                ("name" := string)
+                ("host" := string)
+                ("reason" := string)
     in
         case decodeString decoder json of
-            Ok ( pid, cpu, mem, stime ) ->
-                Success
-                    { pid = pid
-                    , cpu = cpu
-                    , memory = mem
-                    , start = Date.fromTime stime
-                    , host = ""
-                    , name = ""
-                    , status = Up
-                    }
+            Ok ( name, host, reason ) ->
+                let
+                    proc =
+                        Process name host (Down reason) Nothing Nothing Nothing Nothing Nothing
+                in
+                    Just proc
 
-            Err err ->
-                Error err
+            Err error ->
+                Nothing

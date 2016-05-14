@@ -1,28 +1,21 @@
 module Types exposing (..)
 
+import Maybe
 import Date
 
 
 type Status
-    = Up
-    | Down
-
-
-type ProcessResultData
-    = Success Process
-    | Error String
-
-
-type alias ProcessResult =
-    { name : String, process : ProcessResultData }
+    = Running
+    | Down String
 
 
 type alias Process =
-    { pid : String
-    , name : String
+    { name : String
     , host : String
-    , start : Date.Date
-    , memory : Float
-    , cpu : Float
     , status : Status
+    , pid : Maybe String
+    , started : Maybe Date.Date
+    , current : Maybe Date.Date
+    , memory : Maybe Float
+    , cpu : Maybe Float
     }

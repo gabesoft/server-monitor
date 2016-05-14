@@ -10,20 +10,20 @@ import models._
 import play.api.libs.ws.ahc.AhcWSClient
 
 object ProcStatusReader {
-  def props(proc: Proc): Props = Props(new ProcStatusReader(proc))
+  def props(procInfo: ProcessInfo): Props = Props(new ProcStatusReader(procInfo))
 }
 
 /**
   * Actor that reads the status for a process
   * @param proc The process for which to read the status
   */
-class ProcStatusReader(proc: Proc) extends Actor with ActorLogging {
+class ProcStatusReader(procInfo: ProcessInfo) extends Actor with ActorLogging {
   var paused = false
   var running = false
   var stopped = false
 
-  implicit val materializer = ActorMaterializer()
-  implicit val system = ActorSystem("main-actor-system")
+  implicit val system = context.system
+  implicit val materializer = ActorMaterializer()(system)
 
   def receive = {
     case ReadStatus =>
@@ -37,9 +37,8 @@ class ProcStatusReader(proc: Proc) extends Actor with ActorLogging {
       if (!running) context.stop(self)
   }
 
-  def publish(data: String): Unit = {
-    val status = StatusResponse(Proc.withStatus(proc, data))
-    context.system.eventStream.publish(status)
+  def publish(proc: ProcessInfo): Unit = {
+    context.system.eventStream.publish(StatusResponse(proc))
   }
 
   def readStatus(): Unit = {
@@ -47,15 +46,13 @@ class ProcStatusReader(proc: Proc) extends Actor with ActorLogging {
     running = true
 
     val ws = AhcWSClient()
-    val url = "http://" + proc.host + proc.statusPath
 
-    ws.url(url).get().onComplete { res =>
+    ws.url(procInfo.pingUrl).get().onComplete { res =>
       res match {
         case Success(response) =>
-          publish(response.body)
+          publish(ProcessInfo.parseRunning(procInfo, response.body))
         case Failure(ex) =>
-          val data = s"""{"error":"${ex.toString()}"}"""
-          publish(data)
+          publish(ProcessInfo.parseFailed(procInfo, ex.toString()))
       }
 
       ws.close()

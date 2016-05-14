@@ -14,5 +14,5 @@ object ActorsProtocol {
   case object ResumeStatusReader
   case object StopStatusReader
   case object ReadStatus
-  case class StatusResponse(proc: Proc)
+  case class StatusResponse(proc: ProcessInfo)
 }

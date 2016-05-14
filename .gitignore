@@ -12,5 +12,6 @@ target
 scalastyle-config.xml
 .DS_Store
 app/assets/elm/elm-stuff
+app/assets/elm/elm.js
 app/assets/elm/index.html
 public/javascripts/main-elm.js

@@ -67,3 +67,16 @@ body {
     display: table-row-group;
   }
 }
+
+.refresh {
+  background-color: $gray100;
+  border: none;
+  color: $gray30;
+  cursor: pointer;
+  outline: none;
+
+  &:hover {
+    background-color: $gray90;
+    color: $green_light;
+  }
+}

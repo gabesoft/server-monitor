@@ -1,8 +1,5 @@
-@(procs: Seq[models.Proc])(implicit req: RequestHeader)
+@(procs: Seq[models.ProcessInfo])(implicit req: RequestHeader)
 
 @main("Server Monitor") {
   <div id="app-content"></div>
-  <script>
-   window.socketUrl = jsRoutes.controllers.Application.stream().webSocketURL();
-  </script>
 }

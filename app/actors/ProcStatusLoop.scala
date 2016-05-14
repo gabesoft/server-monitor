@@ -9,7 +9,7 @@ import models._
 object ProcStatusLoop {
   case object RunLoop
 
-  def props(procs: Seq[Proc], interval: FiniteDuration): Props =
+  def props(procs: Seq[ProcessInfo], interval: FiniteDuration): Props =
     Props(new ProcStatusLoop(procs, interval))
 }
 
@@ -18,7 +18,7 @@ object ProcStatusLoop {
   * @param procs The list of processes to monitor
   * @param interval The repeat interval
   */
-class ProcStatusLoop(procs: Seq[Proc], interval: FiniteDuration) extends Actor with ActorLogging {
+class ProcStatusLoop(procs: Seq[ProcessInfo], interval: FiniteDuration) extends Actor with ActorLogging {
   import context.dispatcher
   import ProcStatusLoop._
 
@@ -61,7 +61,7 @@ class ProcStatusLoop(procs: Seq[Proc], interval: FiniteDuration) extends Actor w
 
   def reschedule(): Unit = {
     if (!scheduled && count > 0) {
-      log.info(s"Rescheduling task loop $count")
+      log.debug(s"Rescheduling task loop $count")
       context.system.scheduler.scheduleOnce(interval, self, RunLoop)
       scheduled = true
     }
@@ -69,14 +69,14 @@ class ProcStatusLoop(procs: Seq[Proc], interval: FiniteDuration) extends Actor w
 
   def startLoop(): Unit = {
     count = count + 1
-    log.info(s"Start loop $count")
+    log.debug(s"Start loop $count")
     readers.foreach(reader => reader ! ResumeStatusReader)
     reschedule()
   }
 
   def pauseLoop(): Unit = {
     count = Math.max(0, count - 1)
-    log.info(s"Pause loop $count")
+    log.debug(s"Pause loop $count")
     if (count == 0) {
       readers.foreach(reader => reader ! PauseStatusReader)
     }

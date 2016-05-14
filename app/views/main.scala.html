@@ -24,6 +24,15 @@
     @content
   </body>
   <script>
-   Elm.Main.embed(document.getElementById('app-content'));
+   var app = Elm.Main.embed(document.getElementById('app-content'), {
+     socketUrl: jsRoutes.controllers.Application.stream().webSocketURL()
+   });
+
+   window.socketUrl = jsRoutes.controllers.Application.stream().webSocketURL();
+   window.app = app;
+
+   setTimeout(() => {
+     app.ports.readStatus.send(window.socketUrl);
+   }, 300);
   </script>
 </html>

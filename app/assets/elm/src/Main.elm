@@ -1,28 +1,34 @@
 module Main exposing (main)
 
-import Json exposing(..)
-import Json.Encode
+import Interop exposing (readStatus)
+import Html.Events exposing (onClick)
+import Maybe exposing (withDefault)
+import Json exposing (decode)
 import DateFormat
-import String
 import Types exposing (..)
-import MockData
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.App as Html
 import WebSocket
+import Platform.Sub exposing (batch)
 
 
 type alias Model =
-    { processes : List Process, json : String }
+    { processes : List Process, url : String }
+
+
+type alias Flags =
+    { socketUrl : String }
 
 
 type Msg
     = NewMessage String
+    | ReadStatus String
 
 
-main : Program Never
+main : Program Flags
 main =
-    Html.program
+    Html.programWithFlags
         { init = init
         , view = view
         , update = update
@@ -30,60 +36,95 @@ main =
         }
 
 
-readFirstStatus : Cmd a
-readFirstStatus =
+init : Flags -> ( Model, Cmd Msg )
+init flags =
     let
         url =
-            "ws://127.0.0.1:9000/stream"
-
-        obj =
-            Json.Encode.object [ ( "type", Json.Encode.string "readStatus" ) ]
-
-        msg =
-            Json.Encode.encode 0 obj
+            flags.socketUrl
     in
-        WebSocket.send url msg
-
-
-init : ( Model, Cmd Msg )
-init =
-    ( Model MockData.data "Waiting for status ..."
-    , readFirstStatus
-    )
+        ( { processes = [], url = url }, sendReadStatus url )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    WebSocket.listen "ws://127.0.0.1:9000/stream" NewMessage
+    batch
+        [ WebSocket.listen model.url NewMessage
+        , readStatus ReadStatus
+        ]
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        NewMessage str ->
+            case decode str of
+                Just proc ->
+                    ( { model | processes = replace model.processes proc }, Cmd.none )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        ReadStatus _ ->
+            ( model, sendReadStatus model.url )
+
+
+sendReadStatus : String -> Cmd Msg
+sendReadStatus url =
+    WebSocket.send url """{ "type": "readStatus" }"""
 
 
 toRecord process =
-    { pid = process.pid
+    { pid = process.pid |> withDefault ""
     , name = process.name
     , host = process.host
-    , start = process.start |> DateFormat.format "%d/%m/%Y"
-    , memory = Basics.toString process.memory
-    , cpu = Basics.toString process.cpu
-    , status = process.status |> Basics.toString |> String.toLower
+    , start =
+        case process.started of
+            Just date ->
+                date |> DateFormat.format "%d/%m/%Y"
+
+            Nothing ->
+                ""
+    , memory = process.memory |> withDefault 0.0 |> Basics.toString
+    , cpu = process.cpu |> withDefault 0.0 |> Basics.toString
+    , status =
+        case process.status of
+            Running ->
+                ( "up", "" )
+
+            Down reason ->
+                ( "down", reason )
     , class = "process " ++ process.name
     }
 
 
-toSpan : String -> String -> Html a
-toSpan cls txt =
-    span [ class cls ] [ text txt ]
+toSpan : DisplayItem -> Html a
+toSpan item =
+    case item of
+        Span cls txt ->
+            span [ class cls ] [ text txt ]
+
+        SpanEx cls txt t ->
+            span [ class cls, title t ] [ text txt ]
+
+
+type DisplayItem
+    = Span String String
+    | SpanEx String String String
 
 
 display record =
     li [ class record.class ]
         [ div [ class "content" ]
-            [ (toSpan "pid" record.pid)
-            , (toSpan "name" record.name)
-            , (toSpan "host" record.host)
-            , (toSpan "start" record.start)
-            , (toSpan "mem" record.memory)
-            , (toSpan "cpu" record.cpu)
-            , (toSpan ("status " ++ record.status) record.status)
+            [ Span "pid" record.pid |> toSpan
+            , Span "name" record.name |> toSpan
+            , Span "host" record.host |> toSpan
+            , Span "start" record.start |> toSpan
+            , Span "mem" record.memory |> toSpan
+            , Span "cpu" record.cpu |> toSpan
+            , SpanEx ("status " ++ (fst record.status))
+                (fst record.status)
+                (snd record.status)
+                |> toSpan
             ]
         ]
 
@@ -101,7 +142,7 @@ view model =
             , start = "Start Date"
             , memory = "Memory"
             , cpu = "Cpu"
-            , status = "Status"
+            , status = ( "Status", "" )
             , class = "titles"
             }
 
@@ -112,13 +153,31 @@ view model =
             [ div [ class "main-content" ]
                 [ h3 [ class "title" ] [ text "Processes" ]
                 , ul [ class "process-list" ] items
+                , button
+                    [ class "refresh"
+                    , onClick (ReadStatus model.url)
+                    ]
+                    [ text "Refresh" ]
                 ]
-            , pre [] [ code [] [ text model.json ] ]
             ]
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        NewMessage str ->
-            ( { model | json = str }, Cmd.none )
+replace : List Process -> Process -> List Process
+replace list proc =
+    let
+        has =
+            list |> List.filter (\p -> p.name == proc.name) |> List.length |> \x -> x > 0
+    in
+        case has of
+            True ->
+                List.map
+                    (\p ->
+                        if p.name == proc.name then
+                            proc
+                        else
+                            p
+                    )
+                    list
+
+            False ->
+                list ++ [ proc ]

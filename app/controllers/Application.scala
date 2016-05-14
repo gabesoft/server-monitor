@@ -39,12 +39,12 @@ class Application @Inject() (implicit system: ActorSystem, materializer: Materia
     d.toNanos nanoseconds
   }
 
-  def readProcsFromConfig(): Seq[Proc] = {
-    def makeProc(config: Config): Proc = {
-      Proc(config.getString("name"),
-           config.getString("host"),
-           config.getString("statusPath"),
-           None)
+  def readProcsFromConfig(): Seq[ProcessInfo] = {
+    def makeProc(config: Config): ProcessInfo = {
+      ProcessInfo.make(
+        config.getString("name"),
+        config.getString("host"),
+        config.getString("statusPath"))
     }
 
     ConfigFactory.load()

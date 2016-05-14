@@ -3,6 +3,7 @@ package actors
 import actors.ActorsProtocol._
 import akka.actor._
 import akka.event.LoggingReceive
+import java.util.Date
 import javax.inject.Inject
 import models._
 import play.api.libs.json.{JsValue, Json, Writes}
@@ -14,16 +15,33 @@ object ClientConnection {
 
   def props(out: ActorRef, statusReader: ActorRef): Props = Props(new ClientConnection(out, statusReader))
 
-  case class ProcStatusMessage(proc: Proc)
+  case class ProcStatusMessage(proc: ProcessInfo)
 
   object ProcStatusMessage {
     implicit val procStatusMessageWrites = new Writes[ProcStatusMessage] {
       def writes(message: ProcStatusMessage): JsValue = {
-        Json.obj(
-          "type" -> "process",
-          "name" -> message.proc.name,
-          "status" -> message.proc.status
-        )
+        val proc = message.proc
+
+        proc.status match {
+          case Running() =>
+            Json.obj(
+              "name" -> proc.name,
+              "host" -> proc.host,
+              "status" -> "running",
+              "cpu" -> proc.cpu.get,
+              "memory" -> proc.memory.get,
+              "pid" -> proc.pid.get,
+              "startDate" -> new Date(proc.startDate.get),
+              "currentDate" -> new Date()
+            )
+          case Down(reason) =>
+            Json.obj(
+              "name" -> proc.name,
+              "host" -> proc.host,
+              "status" -> "down",
+              "reason" -> reason
+            )
+        }
       }
     }
   }
@@ -42,7 +60,7 @@ class ClientConnection @Inject() (out: ActorRef, statusReader: ActorRef) extends
   }
 
   def receive = LoggingReceive {
-    case StatusResponse(proc: Proc) =>
+    case StatusResponse(proc: ProcessInfo) =>
       out ! Json.toJson(ProcStatusMessage(proc))
     case js: JsValue =>
       ((js \ "type").as[String]) match {
