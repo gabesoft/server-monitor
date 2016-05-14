@@ -12,7 +12,7 @@ target
 .ensime_cache
 scalastyle-config.xml
 .DS_Store
-client/<Plug>lm-stuff
-client/<Plug>lm.js
-client/<Plug>ndex.html
+client/elm-stuff
+client/elm.js
+client/endex.html
 public/javascripts/main-elm.js

@@ -1,8 +1,0 @@
-var _gabesoft$server_monitor$Types$Process = F8(
-	function (a, b, c, d, e, f, g, h) {
-		return {name: a, host: b, status: c, pid: d, started: e, current: f, memory: g, cpu: h};
-	});
-var _gabesoft$server_monitor$Types$Down = function (a) {
-	return {ctor: 'Down', _0: a};
-};
-var _gabesoft$server_monitor$Types$Running = {ctor: 'Running'};

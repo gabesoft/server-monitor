@@ -11,6 +11,8 @@ excludeFilter in (Assets, JshintKeys.jshint) := {
   new SimpleFileFilter(_.getCanonicalPath startsWith elm)
 }
 
+watchSources <+= baseDirectory map { _ / "client" }
+
 scalaVersion := "2.11.7"
 
 val akkaVersion = "2.4.4"
