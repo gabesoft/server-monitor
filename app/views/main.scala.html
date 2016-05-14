@@ -4,7 +4,7 @@
  * two arguments, a `String` for the title of the page and an `Html`
  * object to insert into the body of the page.
  *@
-@(title: String)(content: Html)(implicit req: RequestHeader)
+@(title: String, procs: Seq[models.ProcessInfo])(content: Html)(implicit req: RequestHeader)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -24,14 +24,17 @@
     @content
   </body>
   <script>
+   window.processes = @Html(ProcessInfo.stringify(procs).toString())
+
    var app = Elm.Main.embed(document.getElementById('app-content'), {
-     socketUrl: jsRoutes.controllers.Application.stream().webSocketURL()
+     socketUrl: jsRoutes.controllers.Application.stream().webSocketURL(),
+     processes: window.processes.map(JSON.stringify)
    });
 
    window.socketUrl = jsRoutes.controllers.Application.stream().webSocketURL();
    window.app = app;
 
-   setTimeout(() => {
+   setTimeout(function() {
      app.ports.readStatus.send(window.socketUrl);
    }, 300);
   </script>

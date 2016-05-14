@@ -1,6 +1,8 @@
 TEMP := $(shell find . -name ".\#*")
 CLIENT := client
 DIR := $(shell pwd)
+ELM_ASSETS_SRC = $(DIR)/app/assets/elm/src
+ELM_SRC = $(DIR)/client/src 
 
 scalastyle-config.xml:
 	sbt scalastyleGenerateConfig
@@ -20,7 +22,7 @@ build: clean-temp
 run: clean-temp
 	activator ~run
 
-elm: clean-temp
+run-elm: clean-temp link-elm
 	activator ~elm
 
 test: clean-temp
@@ -42,6 +44,7 @@ install-elm:
 	@cd $(CLIENT) && elm package install
 
 link-elm:
-	@ln -s -f -v $(DIR)/client $(DIR)/app/assets/elm
+	@mkdir -p $(ELM_ASSETS_SRC)
+	@ln -s -f -v $(ELM_SRC) $(ELM_ASSETS_SRC)
 
 .PHONY: clean-temp

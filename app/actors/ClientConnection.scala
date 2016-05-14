@@ -20,28 +20,7 @@ object ClientConnection {
   object ProcStatusMessage {
     implicit val procStatusMessageWrites = new Writes[ProcStatusMessage] {
       def writes(message: ProcStatusMessage): JsValue = {
-        val proc = message.proc
-
-        proc.status match {
-          case Running() =>
-            Json.obj(
-              "name" -> proc.name,
-              "host" -> proc.host,
-              "status" -> "running",
-              "cpu" -> proc.cpu.get,
-              "memory" -> proc.memory.get,
-              "pid" -> proc.pid.get,
-              "startDate" -> new Date(proc.startDate.get),
-              "currentDate" -> new Date()
-            )
-          case Down(reason) =>
-            Json.obj(
-              "name" -> proc.name,
-              "host" -> proc.host,
-              "status" -> "down",
-              "reason" -> reason
-            )
-        }
+        ProcessInfo.stringify(message.proc)
       }
     }
   }

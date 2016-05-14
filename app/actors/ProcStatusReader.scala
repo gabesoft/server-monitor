@@ -1,5 +1,6 @@
 package actors
 
+import java.io.IOException
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
@@ -25,6 +26,8 @@ class ProcStatusReader(procInfo: ProcessInfo) extends Actor with ActorLogging {
   implicit val system = context.system
   implicit val materializer = ActorMaterializer()(system)
 
+  val ws = AhcWSClient()
+
   def receive = {
     case ReadStatus =>
       if(!paused) readStatus()
@@ -41,11 +44,17 @@ class ProcStatusReader(procInfo: ProcessInfo) extends Actor with ActorLogging {
     context.system.eventStream.publish(StatusResponse(proc))
   }
 
+  override def postStop = {
+    try {
+      ws.close()
+    } catch {
+      case e: Exception => log.error(e.toString())
+    }
+  }
+
   def readStatus(): Unit = {
 
     running = true
-
-    val ws = AhcWSClient()
 
     ws.url(procInfo.pingUrl).get().onComplete { res =>
       res match {
@@ -55,7 +64,6 @@ class ProcStatusReader(procInfo: ProcessInfo) extends Actor with ActorLogging {
           publish(ProcessInfo.parseFailed(procInfo, ex.toString()))
       }
 
-      ws.close()
       running = false
 
       if (stopped) {

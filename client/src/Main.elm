@@ -18,7 +18,7 @@ type alias Model =
 
 
 type alias Flags =
-    { socketUrl : String }
+    { socketUrl : String, processes : List String }
 
 
 type Msg
@@ -41,8 +41,13 @@ init flags =
     let
         url =
             flags.socketUrl
+
+        processes =
+            flags.processes
+                |> List.map decode
+                |> List.filterMap identity
     in
-        ( { processes = [], url = url }, sendReadStatus url )
+        ( { processes = processes, url = url }, sendReadStatus url )
 
 
 subscriptions : Model -> Sub Msg
@@ -74,7 +79,7 @@ sendReadStatus url =
 
 
 toRecord process =
-    { pid = process.pid |> withDefault ""
+    { pid = process.pid |> withDefault "00000"
     , name = process.name
     , host = process.host
     , start =

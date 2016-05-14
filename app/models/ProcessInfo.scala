@@ -37,6 +37,33 @@ object ProcessInfo {
   def parseFailed(proc: ProcessInfo, error: String): ProcessInfo = {
     new ProcessInfo(proc.name, proc.host, proc.pingPath, Down(error), None, None, None, None)
   }
+
+  def stringify(proc: ProcessInfo): JsValue = {
+    proc.status match {
+      case Running() =>
+        Json.obj(
+          "name" -> proc.name,
+          "host" -> proc.host,
+          "status" -> "running",
+          "cpu" -> proc.cpu.get,
+          "memory" -> proc.memory.get,
+          "pid" -> proc.pid.get,
+          "startDate" -> new Date(proc.startDate.get),
+          "currentDate" -> new Date()
+        )
+      case Down(reason) =>
+        Json.obj(
+          "name" -> proc.name,
+          "host" -> proc.host,
+          "status" -> "down",
+          "reason" -> reason
+        )
+    }
+  }
+
+  def stringify(procs: Seq[ProcessInfo]): JsArray = {
+    JsArray(procs.map(stringify(_)))
+  }
 }
 
 case class ProcessInfo (

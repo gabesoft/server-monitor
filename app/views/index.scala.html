@@ -1,5 +1,5 @@
 @(procs: Seq[models.ProcessInfo])(implicit req: RequestHeader)
 
-@main("Server Monitor") {
+@main("Server Monitor", procs) {
   <div id="app-content"></div>
 }
