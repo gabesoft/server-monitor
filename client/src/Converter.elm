@@ -1,4 +1,4 @@
-module Json exposing (decode)
+module Converter exposing (decode)
 
 import Maybe
 import Date

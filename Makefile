@@ -6,6 +6,7 @@ ELM = elm
 NPM = npm
 APP_ASSETS = $(DIR)/app/assets/javascripts
 ELM_SRC = $(DIR)/client/src
+ELM_FILES = $(wildcard $(ELM_SRC)/*.elm)
 ELM_BUILD_ARGS := make
 ELM_INSTALL_ARGS := package install
 WATCH = $(BIN)/chokidar
@@ -49,7 +50,7 @@ elm-clean:
 elm-install:
 	@cd $(CLIENT) && $(ELM) $(ELM_INSTALL_ARGS)
 
-elm-watch:
+elm-watch: elm-build
 	$(WATCH) $(WATCH_ARGS)
 
 npm-install:
@@ -57,7 +58,7 @@ npm-install:
 
 setup: elm-install npm-install
 
-$(APP_ASSETS)/main-elm.js: $(ELM_SRC)/Main.elm
+$(APP_ASSETS)/main-elm.js: $(ELM_FILES)
 	@cd $(CLIENT) && $(ELM) $(ELM_BUILD_ARGS) $(ELM_SRC)/Main.elm --output $(APP_ASSETS)/main-elm.js
 
 .PHONY: clean-temp elm-build
