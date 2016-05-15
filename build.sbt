@@ -9,18 +9,15 @@ lazy val root = (project in file("."))
 lazy val elm = taskKey[Unit]("Compiles elm files")
 
 elm := {
-  "make build-elm" !
+  "make elm-build" !
 }
-
-addCommandAlias("runWithElm", "; ~run ; ~elm")
 
 excludeFilter in (Assets, JshintKeys.jshint) := {
-  val elm = (baseDirectory.value / "app/assets/elm").getCanonicalPath
-  new SimpleFileFilter(_.getCanonicalPath startsWith elm)
+  val elm = (baseDirectory.value / "app/assets/javascripts/main-elm.js").getCanonicalPath
+  new SimpleFileFilter(_.getCanonicalPath equals elm)
 }
 
-watchSources <+= baseDirectory map { _ / "client/src" }
-watchSources <+= baseDirectory map { _ / "public/javascripts/main-elm.js" }
+pipelineStages := Seq(rjs, uglify, digest, gzip)
 
 scalaVersion := "2.11.7"
 

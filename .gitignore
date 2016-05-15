@@ -15,4 +15,8 @@ client/elm-stuff
 client/elm.js
 client/endex.html
 public/javascripts/main-elm.js
+public/javascripts/main-elm.min.js
+public/javascripts/main-elm.min.js.gz
 app/assets/elm
+app/assets/javascripts/main-elm.js
+node_modules

@@ -1,16 +1,17 @@
 module Main exposing (main)
 
-import Interop exposing (readStatus)
-import Html.Events exposing (onClick)
-import Maybe exposing (withDefault)
-import Json exposing (decode)
 import DateFormat
-import Types exposing (..)
 import Html exposing (..)
-import Html.Attributes exposing (..)
 import Html.App as Html
-import WebSocket
+import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
+import Json exposing (decode)
+import Maybe exposing (withDefault)
 import Platform.Sub exposing (batch)
+import Process exposing (sleep)
+import Task exposing (perform)
+import Types exposing (..)
+import WebSocket
 
 
 type alias Model =
@@ -23,7 +24,7 @@ type alias Flags =
 
 type Msg
     = NewMessage String
-    | ReadStatus String
+    | ReadStatus
 
 
 main : Program Flags
@@ -46,16 +47,19 @@ init flags =
             flags.processes
                 |> List.map decode
                 |> List.filterMap identity
+
+        read _ =
+            ReadStatus
+
+        delay =
+            sleep 100
     in
-        ( { processes = processes, url = url }, sendReadStatus url )
+        ( { processes = processes, url = url }, perform read read delay )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    batch
-        [ WebSocket.listen model.url NewMessage
-        , readStatus ReadStatus
-        ]
+    WebSocket.listen model.url NewMessage
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -69,16 +73,16 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-        ReadStatus _ ->
-            ( model, sendReadStatus model.url )
+        ReadStatus ->
+            ( model, readStatus model.url )
 
 
-sendReadStatus : String -> Cmd Msg
-sendReadStatus url =
+readStatus : String -> Cmd Msg
+readStatus url =
     WebSocket.send url """{ "type": "readStatus" }"""
 
 
-toRecord process =
+formatForDisplay process =
     { pid = process.pid |> withDefault "00000"
     , name = process.name
     , host = process.host
@@ -88,7 +92,7 @@ toRecord process =
                 date |> DateFormat.format "%d/%m/%Y"
 
             Nothing ->
-                ""
+                "00/00/0000"
     , memory = process.memory |> withDefault 0.0 |> Basics.toString
     , cpu = process.cpu |> withDefault 0.0 |> Basics.toString
     , status =
@@ -138,7 +142,7 @@ view : Model -> Html Msg
 view model =
     let
         procs =
-            List.map toRecord model.processes
+            List.map formatForDisplay model.processes
 
         titles =
             { pid = "Pid"
@@ -160,7 +164,7 @@ view model =
                 , ul [ class "process-list" ] items
                 , button
                     [ class "refresh"
-                    , onClick (ReadStatus model.url)
+                    , onClick ReadStatus
                     ]
                     [ text "Refresh" ]
                 ]
@@ -170,19 +174,21 @@ view model =
 replace : List Process -> Process -> List Process
 replace list proc =
     let
-        has =
-            list |> List.filter (\p -> p.name == proc.name) |> List.length |> \x -> x > 0
+        exists =
+            list
+                |> List.filter (\p -> p.name == proc.name)
+                |> List.length
+                |> \x -> x > 0
+
+        replace p =
+            if p.name == proc.name then
+                proc
+            else
+                p
     in
-        case has of
+        case exists of
             True ->
-                List.map
-                    (\p ->
-                        if p.name == proc.name then
-                            proc
-                        else
-                            p
-                    )
-                    list
+                List.map replace list
 
             False ->
                 list ++ [ proc ]

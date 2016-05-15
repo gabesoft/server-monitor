@@ -24,18 +24,17 @@
     @content
   </body>
   <script>
-   window.processes = @Html(ProcessInfo.stringify(procs).toString())
+   (function() {
+     var processes = @Html(ProcessInfo.stringify(procs).toString());
+     var socketUrl = jsRoutes.controllers.Application.stream().webSocketURL();
+     var app = Elm.Main.embed(document.getElementById('app-content'), {
+       socketUrl: socketUrl,
+       processes: processes.map(JSON.stringify)
+     });
 
-   var app = Elm.Main.embed(document.getElementById('app-content'), {
-     socketUrl: jsRoutes.controllers.Application.stream().webSocketURL(),
-     processes: window.processes.map(JSON.stringify)
-   });
-
-   window.socketUrl = jsRoutes.controllers.Application.stream().webSocketURL();
-   window.app = app;
-
-   setTimeout(function() {
-     app.ports.readStatus.send(window.socketUrl);
-   }, 300);
+     window.socketUrl = socketUrl;
+     window.processes = processes;
+     window.app = app;
+   })();
   </script>
 </html>

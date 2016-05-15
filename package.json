@@ -1,0 +1,26 @@
+{
+  "name": "server-monitor",
+  "version": "1.0.0",
+  "description": "Monitors server processes",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gabesoft/server-monitor.git"
+  },
+  "author": "Gabriel Adomnicai",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gabesoft/server-monitor/issues"
+  },
+  "homepage": "https://github.com/gabesoft/server-monitor#readme",
+  "devDependencies": {
+    "chokidar-cli": "^1.2.0",
+    "uglify-js": "^2.6.2"
+  }
+}
