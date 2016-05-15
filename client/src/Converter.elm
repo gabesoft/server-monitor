@@ -41,20 +41,24 @@ decodeRunning json =
             Ok ( name, host, cpu, memory, pid, startDate, currentDate ) ->
                 let
                     proc =
-                        { name = name
-                        , host = host
-                        , status = Running
-                        , cpu = Just cpu
-                        , memory = Just memory
-                        , pid = Just pid
-                        , started = Just (Date.fromTime startDate)
-                        , current = Just (Date.fromTime currentDate)
-                        }
+                        (makeProcess name host Running)
                 in
-                    Just proc
+                    Just
+                        { proc
+                            | cpu = Just cpu
+                            , memory = Just memory
+                            , pid = Just pid
+                            , started = Just (Date.fromTime startDate)
+                            , current = Just (Date.fromTime currentDate)
+                        }
 
             Err error ->
                 Nothing
+
+
+makeProcess : String -> String -> Status -> Process
+makeProcess name host status =
+    Process name host status Nothing Nothing Nothing Nothing Nothing
 
 
 decodeDown : String -> Maybe Process
@@ -70,7 +74,7 @@ decodeDown json =
             Ok ( name, host, reason ) ->
                 let
                     proc =
-                        Process name host (Down reason) Nothing Nothing Nothing Nothing Nothing
+                        makeProcess name host (Down reason)
                 in
                     Just proc
 
