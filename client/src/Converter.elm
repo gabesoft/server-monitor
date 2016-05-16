@@ -2,14 +2,16 @@ module Converter exposing (decode)
 
 import Maybe
 import Date
+import Result
 import Json.Decode exposing (..)
 import Types exposing (..)
 
 
-decode : String -> Maybe Process
+decode : String -> Result String Process
 decode json =
-    case decodeString ("status" := string) json of
-        Ok status ->
+    let
+        toProc : String -> Result String Process
+        toProc status =
             case status of
                 "running" ->
                     decodeRunning json
@@ -18,13 +20,15 @@ decode json =
                     decodeDown json
 
                 _ ->
-                    Nothing
+                    Err ("Invalid status " ++ status)
 
-        Err error ->
-            Nothing
+        status =
+            decodeString ("status" := string) json
+    in
+        Result.andThen status toProc
 
 
-decodeRunning : String -> Maybe Process
+decodeRunning : String -> Result String Process
 decodeRunning json =
     let
         decoder =
@@ -36,24 +40,22 @@ decodeRunning json =
                 ("pid" := string)
                 ("startDate" := float)
                 ("currentDate" := float)
-    in
-        case decodeString decoder json of
-            Ok ( name, host, cpu, memory, pid, startDate, currentDate ) ->
-                let
-                    proc =
-                        (makeProcess name host Running)
-                in
-                    Just
-                        { proc
-                            | cpu = Just cpu
-                            , memory = Just memory
-                            , pid = Just pid
-                            , started = Just (Date.fromTime startDate)
-                            , current = Just (Date.fromTime currentDate)
-                        }
 
-            Err error ->
-                Nothing
+        toProc ( name, host, cpu, memory, pid, startDate, currentDate ) =
+            let
+                proc =
+                    (makeProcess name host Running)
+            in
+                { proc
+                    | cpu = Just cpu
+                    , memory = Just memory
+                    , pid = Just pid
+                    , started = Just (Date.fromTime startDate)
+                    , current = Just (Date.fromTime currentDate)
+                }
+    in
+        decodeString decoder json
+            |> Result.map toProc
 
 
 makeProcess : String -> String -> Status -> Process
@@ -61,7 +63,7 @@ makeProcess name host status =
     Process name host status Nothing Nothing Nothing Nothing Nothing
 
 
-decodeDown : String -> Maybe Process
+decodeDown : String -> Result String Process
 decodeDown json =
     let
         decoder =
@@ -69,14 +71,9 @@ decodeDown json =
                 ("name" := string)
                 ("host" := string)
                 ("reason" := string)
-    in
-        case decodeString decoder json of
-            Ok ( name, host, reason ) ->
-                let
-                    proc =
-                        makeProcess name host (Down reason)
-                in
-                    Just proc
 
-            Err error ->
-                Nothing
+        toProc ( name, host, reason ) =
+            makeProcess name host (Down reason)
+    in
+        decodeString decoder json
+            |> Result.map toProc

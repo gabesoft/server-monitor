@@ -5,7 +5,7 @@ import Html exposing (..)
 import Html.App as Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Maybe exposing (withDefault)
+import Result exposing (..)
 import Platform.Sub exposing (batch)
 import Process exposing (sleep)
 import ProcessDisplay exposing (toListItems)
@@ -15,7 +15,7 @@ import WebSocket
 
 
 type alias Model =
-    { processes : List Process, url : String }
+    { processes : List Process, url : String, error : String }
 
 
 type alias Flags =
@@ -46,15 +46,16 @@ init flags =
         processes =
             flags.processes
                 |> List.map decode
+                |> List.map toMaybe
                 |> List.filterMap identity
 
         read _ =
             ReadStatus
 
         delay =
-            sleep 100
+            sleep 150
     in
-        ( { processes = processes, url = url }, perform read read delay )
+        ( { processes = processes, url = url, error = "" }, perform read read delay )
 
 
 subscriptions : Model -> Sub Msg
@@ -67,11 +68,11 @@ update msg model =
     case msg of
         NewMessage str ->
             case decode str of
-                Just proc ->
+                Ok proc ->
                     ( { model | processes = replace model.processes proc }, Cmd.none )
 
-                Nothing ->
-                    ( model, Cmd.none )
+                Err msg ->
+                    ( { model | error = msg }, Cmd.none )
 
         ReadStatus ->
             ( model, readStatus model.url )
@@ -93,6 +94,7 @@ view model =
                 , onClick ReadStatus
                 ]
                 [ text "Refresh" ]
+            , pre [ class "error" ] [ text model.error ]
             ]
         ]
 
