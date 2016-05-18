@@ -39,10 +39,16 @@ body {
 
 .titles {
   color: $gray40;
+
+  span {
+    text-align: center;
+  }
 }
 
 .process {
   .status {
+    text-align: center;
+
     &.up {
       color: $green_light;
     }
@@ -54,6 +60,18 @@ body {
 
   .name {
     color: $brown_light;
+  }
+
+  .percentage-bar {
+    min-width: 100px;
+
+    rect.background {
+      fill: $gray70;
+    }
+
+    rect.foreground {
+      fill: $blue_light;
+    }
   }
 }
 

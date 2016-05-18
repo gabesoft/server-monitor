@@ -7,6 +7,12 @@ import Html exposing (span, div, text, li)
 import Html.Attributes exposing (class, title)
 import Types exposing (..)
 import String exposing (padLeft)
+import Graphics
+
+
+type DisplayItem
+    = Text String
+    | Percentage Float
 
 
 toListItems processes =
@@ -20,8 +26,8 @@ toListItems processes =
             , host = "Host"
             , start = "Start Date"
             , duration = "Uptime"
-            , memory = "Memory"
-            , cpu = "Cpu"
+            , memory = Text "Mem"
+            , cpu = Text "Cpu"
             , status = ( "Status", "" )
             , class = "titles"
             }
@@ -36,6 +42,22 @@ toListItem record =
     let
         ( statusText, statusTitle ) =
             record.status
+
+        memory =
+            case record.memory of
+                Text text ->
+                    ( "memory", text, "" ) |> toSpan
+
+                Percentage n ->
+                    span [ class "memory" ] [ Graphics.bar n ]
+
+        cpu =
+            case record.cpu of
+                Text text ->
+                    ( "cpu", text, "" ) |> toSpan
+
+                Percentage n ->
+                    span [ class "cpu" ] [ Graphics.bar n ]
     in
         li [ class record.class ]
             [ div [ class "content" ]
@@ -44,8 +66,8 @@ toListItem record =
                 , ( "host", record.host, "" ) |> toSpan
                 , ( "start", record.start, "" ) |> toSpan
                 , ( "duration", record.duration, "" ) |> toSpan
-                , ( "mem", record.memory, "" ) |> toSpan
-                , ( "cpu", record.cpu, "" ) |> toSpan
+                , memory
+                , cpu
                 , ( "status " ++ statusText, statusText, statusTitle ) |> toSpan
                 ]
             ]
@@ -63,8 +85,8 @@ format process =
             Nothing ->
                 "00/00/0000"
     , duration = uptime process.started process.current
-    , memory = process.memory |> withDefault 0.0 |> Basics.toString
-    , cpu = process.cpu |> withDefault 0.0 |> Basics.toString
+    , memory = process.memory |> withDefault 0.0 |> Percentage
+    , cpu = process.cpu |> withDefault 0.0 |> Percentage
     , status =
         case process.status of
             Running ->

@@ -8,7 +8,7 @@ APP_ASSETS = $(DIR)/app/assets/javascripts
 ELM_SRC = $(DIR)/client/src
 ELM_FILES = $(wildcard $(ELM_SRC)/*.elm)
 ELM_BUILD_ARGS := make
-ELM_INSTALL_ARGS := package install
+ELM_INSTALL_ARGS := package install -y
 WATCH = $(BIN)/chokidar
 WATCH_ARGS = "$(ELM_SRC)/*.elm" -c 'make elm-build'
 
@@ -45,7 +45,7 @@ start: deploy
 elm-build: $(APP_ASSETS)/main-elm.js
 
 elm-clean:
-	$(RM) -f $(APP_ASSETS)/main-elm.js
+	$(RM) $(APP_ASSETS)/main-elm.js
 
 elm-install:
 	@cd $(CLIENT) && $(ELM) $(ELM_INSTALL_ARGS)
