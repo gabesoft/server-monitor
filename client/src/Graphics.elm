@@ -35,7 +35,7 @@ bar percentage =
             200
 
         baseHeight =
-            30
+            75
 
         h =
             baseHeight |> Basics.toString
@@ -58,7 +58,6 @@ bar percentage =
             , text'
                 [ x "50%"
                 , y "50%"
-                , fontSize "20"
                 , dominantBaseline "central"
                 , textAnchor "middle"
                 ]

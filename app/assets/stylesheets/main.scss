@@ -29,12 +29,13 @@ body {
   .content {
     display: table-row;
     width: 100%;
-
-    span {
-      display: table-cell;
-      padding: 2px 5px;
-    }
   }
+
+  span {
+    display: table-cell;
+    padding: 2px 5px;
+  }
+  
 }
 
 .titles {
@@ -46,9 +47,21 @@ body {
 }
 
 .process {
-  .status {
+  .status,
+  .pid,
+  .name,
+  .host,
+  .start,
+  .duration {
     text-align: center;
+  }
 
+  .memory,
+  .cpu {
+    padding: 0 2px;
+  }
+
+  .status {
     &.up {
       color: $green_light;
     }
@@ -63,7 +76,11 @@ body {
   }
 
   .percentage-bar {
-    min-width: 100px;
+    text {
+      fill: $gray20;
+      font-size: 48px;
+      font-family: 'Roboto Mono';
+    }
 
     rect.background {
       fill: $gray70;
