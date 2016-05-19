@@ -59,6 +59,17 @@ body {
   .memory,
   .cpu {
     padding: 0 2px;
+    position: relative;
+
+    svg {
+	    height: 100%;
+	    left: 0px;
+	    position: absolute;
+	    top: 0px;
+      border: 1px solid $gray90;
+      box-sizing: border-box;
+      width: 100%;
+    }
   }
 
   .status {
