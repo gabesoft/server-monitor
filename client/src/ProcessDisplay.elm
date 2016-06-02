@@ -1,7 +1,7 @@
 module ProcessDisplay exposing (..)
 
 import Date
-import DateFormat
+import Date.Format
 import Maybe exposing (withDefault)
 import Html exposing (span, div, text, li)
 import Html.Attributes exposing (class, title)
@@ -80,7 +80,7 @@ format process =
     , start =
         case process.started of
             Just date ->
-                date |> DateFormat.format "%d/%m/%Y"
+                date |> Date.Format.format "%d/%m/%Y"
 
             Nothing ->
                 "00/00/0000"
